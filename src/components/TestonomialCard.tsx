@@ -17,6 +17,8 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ profilePicture, usern
         <Image
           src={profilePicture}
           alt={username}
+          width={1000}
+          height={1000}
           className="w-20 h-20 rounded-full border-4 border-teal-500 mr-4"
         />
         <div>

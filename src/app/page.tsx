@@ -21,6 +21,7 @@ import { useState } from "react";
 import { RegisterSchema, RegisterSchemaType } from "@/lib/validate";
 import { useRouter } from "next/navigation";
 import { createUser } from "@/lib/appwrite.api";
+import Image from "next/image";
 
 
 const Register = () => {
@@ -59,7 +60,7 @@ const Register = () => {
       {/* Form Container */}
       <div className="relative flex flex-col w-full lg:w-1/2 items-center justify-center bg-gray-800 p-8 overflow-y-auto">
         <div className="max-w-md w-full mx-auto">
-          <img src='/icons/logoipsum-297 (1).svg' alt="Logo" className=" mb-4" />
+          <Image src='/icons/logoipsum-297 (1).svg' alt="Logo" className=" mb-4"  width={1000} height={1000}/>
           <h2 className="text-3xl font-bold text-center mb-6">Register</h2>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -159,9 +160,11 @@ const Register = () => {
       </div>
       {/* Side Image */}
       <div className="hidden lg:flex w-1/2 h-screen fixed right-0 ">
-        <img
+        <Image
           src="/onboarding-img.png" // Replace with the actual path to the image
           alt="Doctor"
+          width={1000}
+          height={1000}
           className="w-full h-full object-cover"
         />
       </div>
