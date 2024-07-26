@@ -1,4 +1,5 @@
 // app/components/TestimonialCard.tsx
+import Image from 'next/image';
 import React from 'react';
 
 interface TestimonialCardProps {
@@ -13,7 +14,7 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ profilePicture, usern
     <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200 h-[250px] flex flex-col relative overflow-hidden group hover:shadow-2xl transition-shadow duration-300 ease-in-out">
       <div className="absolute inset-0 bg-gradient-to-br from-teal-500 to-teal-100 opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
       <div className="relative z-10 flex items-center mb-4">
-        <img
+        <Image
           src={profilePicture}
           alt={username}
           className="w-20 h-20 rounded-full border-4 border-teal-500 mr-4"
