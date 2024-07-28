@@ -20,7 +20,7 @@ const PatientForm = async ({ params: { userId } }: SearchParam) => {
         <p className="md:text-lg  text-xs mb-8 text-center font-semibold md:tracking-wider text-gray-300">
           Please fill out the details to book your appointment. <br /> Our specialists are ready to assist you.
         </p>
-        <PatientRegistrationForm user={user} />
+        <PatientRegistrationForm  />
       </div>
     </div>
   );
