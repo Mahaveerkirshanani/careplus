@@ -58,10 +58,10 @@ const Register = () => {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-gray-900 text-white overflow-hidden">
       {/* Form Container */}
-      <div className="relative flex flex-col w-full lg:w-1/2 items-center justify-center bg-gray-800 p-8 overflow-y-auto">
+      <div className="relative flex flex-col w-full lg:w-1/2 items-center justify-center max-md:h-screen bg-gray-800 p-8 overflow-y-auto">
         <div className="max-w-md w-full mx-auto">
-          <Image src='/icons/logoipsum-297 (1).svg' alt="Logo" className=" mb-4"  width={1000} height={1000}/>
-          <h2 className="text-3xl font-bold text-center mb-6">Register</h2>
+          <Image src='/icons/logoipsum-297 (1).svg' alt="Logo" className=" w-[150px] mb-4"  width={1000} height={1000}/>
+          <h2 className="text-3xl font-bold text-center tracking-wider mb-6">Register</h2>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -72,7 +72,7 @@ const Register = () => {
                     <FormLabel className="text-lg">Username</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <FaUser className="absolute left-3 top-3 text-gray-400" />
+                        <FaUser className="absolute left-3 top-4 text-gray-400" />
                         <Input placeholder="Username" {...field} className="pl-10 bg-gray-700 border-gray-600 text-white rounded-md h-12" />
                       </div>
                     </FormControl>
@@ -109,7 +109,7 @@ const Register = () => {
                     <FormLabel className="text-lg">Email</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <FaEnvelope className="absolute left-3 top-3 text-gray-400" />
+                        <FaEnvelope className="absolute left-3 top-4 text-gray-400" />
                         <Input placeholder="Email" {...field} className="pl-10 bg-gray-700 border-gray-600 text-white rounded-md h-12" />
                       </div>
                     </FormControl>
@@ -126,7 +126,7 @@ const Register = () => {
                     <FormLabel className="text-lg">Password</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <FaLock className="absolute left-3 top-3 text-gray-400" />
+                        <FaLock className="absolute left-3 top-4 text-gray-400" />
                         <Input type="password" placeholder="Password" {...field} className="pl-10 bg-gray-700 border-gray-600 text-white rounded-md h-12" />
                       </div>
                     </FormControl>

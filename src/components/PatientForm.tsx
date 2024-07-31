@@ -18,30 +18,28 @@ import "react-phone-number-input/style.css";
 import {
   FaUser,
   FaEnvelope,
-  FaLock,
-  FaPhone,
   FaHome,
   FaUserGraduate,
 } from "react-icons/fa";
-import Link from "next/link";
 import { useState } from "react";
 import {
   Doctors,
+  Gender,
   GenderOptions,
-  RegisterSchema,
-  RegisterSchemaType,
+  IdentificationTypes,
+  PatientFormValidation,
+  PatientFormValidationType,
 } from "@/lib/validate";
 import { useRouter } from "next/navigation";
-import { createUser } from "@/lib/appwrite.api";
 import Image from "next/image";
 import { User } from "../../interface";
-import { PiUserFocusBold } from "react-icons/pi";
 import DatePicker from "react-datepicker";
 import { BiSolidUserAccount } from "react-icons/bi";
 import "react-datepicker/dist/react-datepicker.css";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Label } from "./ui/label";
 import { CalendarDays } from "lucide-react";
+import { PiUserFocusBold } from "react-icons/pi";
 import {
   Select,
   SelectContent,
@@ -50,34 +48,78 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Textarea } from "./ui/textarea";
+import UploadFile from "./UploadFile";
+import { Checkbox } from "./ui/checkbox";
+import { registerPatient } from "@/lib/appwrite.api";
+import { HiMiniIdentification } from 'react-icons/hi2';
 
-const PatientRegistrationForm = (user: User) => {
+const PatientRegistrationForm = ({ user }: { user: User }) => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<RegisterSchemaType>({
-    resolver: zodResolver(RegisterSchema),
+  const form = useForm<PatientFormValidationType>({
+    resolver: zodResolver(PatientFormValidation),
     defaultValues: {
-      username: "",
+      name: "",
       email: "",
       phone: "",
-      password: "",
+      birthDate: new Date(),
+      gender: "male" as Gender,
+      address: "",
+      cnicNumber: "",
+      occupation: "",
+      emergencyContactName: "",
+      emergencyContactNumber: "",
+      primaryPhysician: "",
+      allergies: "",
+      currentMedication: "",
+      familyMedicalHistory: "",
+      pastMedicalHistory: "",
+      identificationDocument: [],
+      treatmentConsent: false,
+      disclosureConsent: false,
+      privacyConsent: false,
     },
   });
 
   const router = useRouter();
 
-  const onSubmit = async (values: RegisterSchemaType) => {
+  const onSubmit = async (values: PatientFormValidationType) => {
     setIsLoading(true);
+    let formData;
+
+    if (
+      values.identificationDocument &&
+      values.identificationDocument.length > 0
+    ) {
+      const blobFile = new Blob([values.identificationDocument[0]], {
+        type: values.identificationDocument[0].type,
+      });
+
+      formData = new FormData();
+      formData.append("blobFile", blobFile);
+      formData.append("fileName", values.identificationDocument[0].name);
+    }
+
     console.log(values);
-    // try {
-    //   const user = await createUser(values);
-    //   if (user) router.push(`/patients/${user.$id}/home`);
-    //   console.log(values);
-    // } catch (error) {
-    //   console.error("Failed to register user:", error);
-    // } finally {
-    //   setIsLoading(false);
-    // }
+
+    try {
+      const patientData = {
+        ...values,
+        userId: user.$id,
+        birthDate: new Date(values.birthDate),
+        identificationDocument: formData,
+      };
+      // @ts-ignore
+      const newPatient = await registerPatient(patientData);
+      if (newPatient) {
+        router.push(`/patients/${user.$id}/new-appointment`);
+      }
+      console.log(newPatient);
+    } catch (error) {
+      console.error("Failed to register user:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -110,15 +152,15 @@ const PatientRegistrationForm = (user: User) => {
               <div className="grid md:grid-cols-2 grid-cols-1 md:gap-4 gap-2">
                 <FormField
                   control={form.control}
-                  name="username"
+                  name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm">Username</FormLabel>
+                      <FormLabel className="text-sm">Name</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <FaUser className="absolute left-3 top-3 text-gray-400" />
+                          <FaUser className="absolute left-3 top-4 text-gray-400" />
                           <Input
-                            placeholder="Username"
+                            placeholder="Name"
                             {...field}
                             className="pl-10 bg-gray-700 border-gray-600 text-white rounded-md h-12"
                           />
@@ -159,7 +201,7 @@ const PatientRegistrationForm = (user: User) => {
                       <FormLabel className="text-sm">Email</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <FaEnvelope className="absolute left-3 top-3 text-gray-400" />
+                          <FaEnvelope className="absolute left-3 top-4 text-gray-400" />
                           <Input
                             placeholder="Email"
                             {...field}
@@ -238,7 +280,7 @@ const PatientRegistrationForm = (user: User) => {
                       <FormLabel className="text-sm">Address</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <FaHome className="absolute left-3 top-3 text-gray-400" />
+                          <FaHome className="absolute left-3 top-4 text-gray-400" />
                           <Input
                             placeholder="Address"
                             {...field}
@@ -281,7 +323,7 @@ const PatientRegistrationForm = (user: User) => {
                       <FormLabel className="text-sm">Occupation</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <FaUserGraduate className="absolute left-3 top-3 text-gray-400" />
+                          <FaUserGraduate className="absolute left-3 top-4 text-gray-400" />
                           <Input
                             placeholder="Softwere Engineer , Accountant "
                             {...field}
@@ -303,7 +345,7 @@ const PatientRegistrationForm = (user: User) => {
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <BiSolidUserAccount className="absolute left-3 top-3 text-gray-400" />
+                          <BiSolidUserAccount className="absolute left-3 top-4 text-gray-400" />
                           <Input
                             placeholder="Guardian's name"
                             {...field}
@@ -388,8 +430,9 @@ const PatientRegistrationForm = (user: User) => {
                   name="allergies"
                   render={({ field }) => (
                     <FormItem>
-                     <FormLabel className="text-sm flex items-center gap-2">
-                        Allergies <p className="text-sm text-gray-400">(if any)</p>
+                      <FormLabel className="text-sm flex items-center gap-2">
+                        Allergies{" "}
+                        <p className="text-sm text-gray-400">(if any)</p>
                       </FormLabel>
                       <FormControl>
                         <Textarea
@@ -408,7 +451,8 @@ const PatientRegistrationForm = (user: User) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm flex items-center gap-2">
-                        Current Medication <p className="text-sm text-gray-400">(if any)</p>
+                        Current Medication{" "}
+                        <p className="text-sm text-gray-400">(if any)</p>
                       </FormLabel>
                       <FormControl>
                         <Textarea
@@ -423,11 +467,12 @@ const PatientRegistrationForm = (user: User) => {
                 />
                 <FormField
                   control={form.control}
-                  name="familyMedicationHistory"
+                  name="familyMedicalHistory"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm flex items-center gap-2">
-                        Family Medical History <p className="text-sm text-gray-400">(if any)</p>
+                        Family Medical History{" "}
+                        <p className="text-sm text-gray-400">(if any)</p>
                       </FormLabel>
                       <FormControl>
                         <Textarea
@@ -446,7 +491,8 @@ const PatientRegistrationForm = (user: User) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm flex items-center gap-2">
-                        Past Medical History <p className="text-sm text-gray-400">(if any)</p>
+                        Past Medical History{" "}
+                        <p className="text-sm text-gray-400">(if any)</p>
                       </FormLabel>
                       <FormControl>
                         <Textarea
@@ -454,6 +500,171 @@ const PatientRegistrationForm = (user: User) => {
                           className=" bg-gray-700 border-gray-600 text-white rounded-md  "
                           placeholder="High fever with cough , Blood vomiting "
                         />
+                      </FormControl>
+                      <FormMessage className="text-red-400" />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <h2 className="text-xl font-semibold tracking-wider text-blue-300">
+                Identification & Verification
+              </h2>
+              <div className="grid md:grid-cols-2 grid-cols-1 md:gap-4 gap-2">
+                <FormField
+                  control={form.control}
+                  name="identificationType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">
+                        Identification Type
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select an identification type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {IdentificationTypes.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {type}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage className="text-red-400" />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="identificationNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">
+                        Identification Number{" "}
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <HiMiniIdentification
+                            size={24}
+                            className="absolute left-3 top-3 text-gray-400"
+                          />
+                          <Input
+                            placeholder="1234567899"
+                            {...field}
+                            className="pl-10 bg-gray-700 border-gray-600 text-white rounded-md h-12"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-red-400" />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={form.control}
+                name="identificationDocument"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm">
+                      Scanned copy of Identification document
+                    </FormLabel>
+                    <FormControl>
+                      <UploadFile
+                        files={field.value}
+                        onchange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-400" />
+                  </FormItem>
+                )}
+              />
+
+              <h2 className="text-xl font-semibold tracking-wider text-blue-300 ">
+                Consent & Privacy
+              </h2>
+
+              <div className="flex flex-col gap-3 ">
+                <FormField
+                  control={form.control}
+                  name="treatmentConsent"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div className="flex items-center gap-4">
+                          <Checkbox
+                            id="treatmentConsent"
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                          <FormLabel
+                            className="text-sm flex items-center gap-2"
+                            htmlFor="treatmentConsent"
+                          >
+                            {" "}
+                            <p className="text-sm text-gray-400 font-semibold tracking-wider">
+                              I consent to Treatment
+                            </p>
+                          </FormLabel>
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-red-400" />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="disclosureConsent"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div className="flex items-center gap-4">
+                          <Checkbox
+                            id="disclosureConsent"
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                          <FormLabel
+                            className="text-sm flex items-center gap-2"
+                            htmlFor="disclosureConsent"
+                          >
+                            {" "}
+                            <p className="text-sm text-gray-400 font-semibold tracking-wider">
+                              I consent to Disclosure of information
+                            </p>
+                          </FormLabel>
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-red-400" />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="privacyConsent"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div className="flex items-center gap-4">
+                          <Checkbox
+                            id="privacyPolicyConsent"
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                          <FormLabel
+                            className="text-sm flex items-center gap-2"
+                            htmlFor="privacyPolicyConsent"
+                          >
+                            <p className="text-sm text-gray-400 font-semibold tracking-wider">
+                              I consent to Privacy & Policy
+                            </p>
+                          </FormLabel>
+                        </div>
                       </FormControl>
                       <FormMessage className="text-red-400" />
                     </FormItem>
@@ -470,20 +681,7 @@ const PatientRegistrationForm = (user: User) => {
               </Button>
             </form>
           </Form>
-          <div className="text-center mt-6 justify-between flex items-center lg:text-sm text-xs">
-            <p>
-              Already have an account?{" "}
-              <Link
-                href="/auth/login"
-                className="text-blue-500 hover:underline"
-              >
-                Login
-              </Link>
-            </p>
-            <Link href="/admin" className="text-blue-500 hover:underline">
-              Admin
-            </Link>
-          </div>
+
           <p className="text-center mt-6 text-gray-500 lg:text-sm text-xs tracking-wider">
             &copy; {new Date().getFullYear()} Mahaveer Kumar. All rights
             reserved.
