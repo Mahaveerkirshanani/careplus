@@ -22,9 +22,12 @@ import { RegisterSchema, RegisterSchemaType } from "@/lib/validate";
 import { useRouter } from "next/navigation";
 import { createUser } from "@/lib/appwrite.api";
 import Image from "next/image";
+import { SearchParamProps } from "../lib/validate";
+import PasskeyMode from "@/components/PasskeyMode";
 
+const Register = ({ searchParams }: SearchParamProps) => {
+  const isAdmin = searchParams.admin == "true";
 
-const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<RegisterSchemaType>({
@@ -53,15 +56,27 @@ const Register = () => {
     }
   };
 
-
-
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-gray-900 text-white overflow-hidden">
+    <>
+    
+    <div className="min-h-screen   flex flex-col lg:flex-row bg-gray-900 text-white overflow-hidden">
       {/* Form Container */}
-      <div className="relative flex flex-col w-full lg:w-1/2 items-center justify-center max-md:h-screen bg-gray-800 p-8 overflow-y-auto">
-        <div className="max-w-md w-full mx-auto">
-          <Image src='/icons/logoipsum-297 (1).svg' alt="Logo" className=" w-[150px] mb-4"  width={1000} height={1000}/>
-          <h2 className="text-3xl font-bold text-center tracking-wider mb-6">Register</h2>
+
+      <div className="relative flex   flex-col w-full lg:w-1/2 items-center justify-center max-md:h-screen bg-gray-800 p-8 overflow-y-auto">
+      {isAdmin && <PasskeyMode />}
+
+        <div className="max-w-md w-full mx-auto max-sm:mt-12 ">
+
+          <Image
+            src="/icons/logoipsum-297 (1).svg"
+            alt="Logo"
+            className=" w-[150px] mb-4"
+            width={1000}
+            height={1000}
+          />
+          <h2 className="text-3xl font-bold text-center tracking-wider mb-6">
+            Register
+          </h2>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -73,14 +88,18 @@ const Register = () => {
                     <FormControl>
                       <div className="relative">
                         <FaUser className="absolute left-3 top-4 text-gray-400" />
-                        <Input placeholder="Username" {...field} className="pl-10 bg-gray-700 border-gray-600 text-white rounded-md h-12" />
+                        <Input
+                          placeholder="Username"
+                          {...field}
+                          className="pl-10 bg-gray-700 border-gray-600 text-white rounded-md h-12"
+                        />
                       </div>
                     </FormControl>
                     <FormMessage className="text-red-400" />
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="phone"
@@ -100,7 +119,7 @@ const Register = () => {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="email"
@@ -110,14 +129,18 @@ const Register = () => {
                     <FormControl>
                       <div className="relative">
                         <FaEnvelope className="absolute left-3 top-4 text-gray-400" />
-                        <Input placeholder="Email" {...field} className="pl-10 bg-gray-700 border-gray-600 text-white rounded-md h-12" />
+                        <Input
+                          placeholder="Email"
+                          {...field}
+                          className="pl-10 bg-gray-700 border-gray-600 text-white rounded-md h-12"
+                        />
                       </div>
                     </FormControl>
                     <FormMessage className="text-red-400" />
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="password"
@@ -127,34 +150,45 @@ const Register = () => {
                     <FormControl>
                       <div className="relative">
                         <FaLock className="absolute left-3 top-4 text-gray-400" />
-                        <Input type="password" placeholder="Password" {...field} className="pl-10 bg-gray-700 border-gray-600 text-white rounded-md h-12" />
+                        <Input
+                          type="password"
+                          placeholder="Password"
+                          {...field}
+                          className="pl-10 bg-gray-700 border-gray-600 text-white rounded-md h-12"
+                        />
                       </div>
                     </FormControl>
                     <FormMessage className="text-red-400" />
                   </FormItem>
                 )}
               />
-              
+
               <Button
                 type="submit"
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-md"
                 disabled={isLoading} // Disable button while loading
               >
-                {isLoading ? ' Loading ...' : ' Get started'}
+                {isLoading ? " Loading ..." : " Get started"}
               </Button>
             </form>
           </Form>
           <div className="text-center mt-6 justify-between flex items-center lg:text-sm text-xs">
             <p>
               Already have an account?{" "}
-              <Link href="/auth/login" className="text-blue-500 hover:underline">Login
+              <Link
+                href="/auth/login"
+                className="text-blue-500 hover:underline"
+              >
+                Login
               </Link>
             </p>
-            <Link href="/admin" className="text-blue-500 hover:underline">Admin
+            <Link href="/?admin=true" className="text-blue-500 hover:underline">
+              Admin
             </Link>
           </div>
           <p className="text-center mt-6 text-gray-500 lg:text-sm text-xs tracking-wider">
-            &copy; {new Date().getFullYear()} Mahaveer Kumar. All rights reserved.
+            &copy; {new Date().getFullYear()} Mahaveer Kumar. All rights
+            reserved.
           </p>
         </div>
       </div>
@@ -169,6 +203,8 @@ const Register = () => {
         />
       </div>
     </div>
+    </>
+
   );
 };
 

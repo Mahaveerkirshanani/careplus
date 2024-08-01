@@ -227,11 +227,11 @@ const PatientRegistrationForm = ({ user }: { user: User }) => {
                         <CalendarDays height={24} width={24} className="ml-2" />
                         <FormControl>
                           <DatePicker
-                            dateFormat={"dd/MM/yyyy"}
+                            dateFormat={"MM/dd/yyyy"}
                             selected={field.value}
                             onChange={(date) => field.onChange(date)}
                             className="h-12 bg-transparent outline-none "
-                            placeholderText="DD/MM/YYYY"
+                            placeholderText="MM/DD/YYYY"
                           />
                         </FormControl>
                       </div>

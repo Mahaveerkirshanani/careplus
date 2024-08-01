@@ -33,8 +33,8 @@ const UploadFile = ({ files, onchange }: UploadFileProps) => {
         />
       ) : (
         <>
-          <BsCloudUploadFill   size={45}  color="#1bff5b"  className="text-gray-400 mb-2 text-3xl " />
-          <p className="text-gray-400 mb-2 text-lg tracking-wider"> <span className="text-green-400 font-semibold tracking-widest">Click to upload 
+          <BsCloudUploadFill   size={45}  color="#1bff5b"  className="text-gray-400 mb-2 lg:text-3xl text-2xl " />
+          <p className="text-gray-400 mb-2 lg:text-lg text-sm tracking-wider"> <span className="text-green-400 font-semibold tracking-widest ">Click to upload 
             </span>, or drag and drop</p>
           <p className="text-gray-500 text-xs font-semibold  tracking-wider">PNG, JPEG,SVG or GIF (max 800×400)</p>
         </>

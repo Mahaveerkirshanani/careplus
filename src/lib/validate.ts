@@ -21,6 +21,9 @@ export const RegisterSchema = z.object({
   }),
 });
 
+
+
+
 export type RegisterSchemaType = z.infer<typeof RegisterSchema>;
 
 export const GenderOptions = ["male", "female", "other"];
@@ -160,6 +163,18 @@ export enum Gender {
   other = "other",
 }
 
+
+export type SearchParamProps = {
+  params: { [key: string]: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+};
+
+
+
+
+
+export type Status = "pending" | "scheduled" | "cancelled";
+
 interface MedicalHistory {
   primaryPhysician: string;
   occupation?: string;
@@ -247,3 +262,137 @@ export const IdentificationTypes = [
   "Student ID Card",
   "Voter ID Card",
 ];
+
+
+
+
+
+
+export const CreateAppointmentSchema = z.object({
+  primaryPhysician: z.string().min(2, "Select at least one doctor"),
+  schedule: z.coerce.date(),
+  reason: z
+    .string()
+    .min(2, "Reason must be at least 2 characters")
+    .max(500, "Reason must be at most 500 characters"),
+  note: z.string().optional(),
+  cancellationReason: z.string().optional(),
+});
+
+export const ScheduleAppointmentSchema = z.object({
+  primaryPhysician: z.string().min(2, "Select at least one doctor"),
+  schedule: z.coerce.date(),
+  reason: z.string().optional(),
+  note: z.string().optional(),
+  cancellationReason: z.string().optional(),
+});
+
+export const CancelAppointmentSchema = z.object({
+  primaryPhysician: z.string().min(2, "Select at least one doctor"),
+  schedule: z.coerce.date(),
+  reason: z.string().optional(),
+  note: z.string().optional(),
+  cancellationReason: z
+    .string()
+    .min(2, "Reason must be at least 2 characters")
+    .max(500, "Reason must be at most 500 characters"),
+});
+
+export function getAppointmentSchema(type: string) {
+  switch (type) {
+    case "create":
+      return CreateAppointmentSchema;
+    case "cancel":
+      return CancelAppointmentSchema;
+    default:
+      return ScheduleAppointmentSchema;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// FORMAT DATE TIME
+export const formatDateTime = (dateString: Date | string) => {
+  const dateTimeOptions: Intl.DateTimeFormatOptions = {
+    // weekday: "short", // abbreviated weekday name (e.g., 'Mon')
+    month: "short", // abbreviated month name (e.g., 'Oct')
+    day: "numeric", // numeric day of the month (e.g., '25')
+    year: "numeric", // numeric year (e.g., '2023')
+    hour: "numeric", // numeric hour (e.g., '8')
+    minute: "numeric", // numeric minute (e.g., '30')
+    hour12: true, // use 12-hour clock (true) or 24-hour clock (false)
+  };
+
+  const dateDayOptions: Intl.DateTimeFormatOptions = {
+    weekday: "short", // abbreviated weekday name (e.g., 'Mon')
+    year: "numeric", // numeric year (e.g., '2023')
+    month: "2-digit", // abbreviated month name (e.g., 'Oct')
+    day: "2-digit", // numeric day of the month (e.g., '25')
+  };
+
+  const dateOptions: Intl.DateTimeFormatOptions = {
+    month: "short", // abbreviated month name (e.g., 'Oct')
+    year: "numeric", // numeric year (e.g., '2023')
+    day: "numeric", // numeric day of the month (e.g., '25')
+  };
+
+  const timeOptions: Intl.DateTimeFormatOptions = {
+    hour: "numeric", // numeric hour (e.g., '8')
+    minute: "numeric", // numeric minute (e.g., '30')
+    hour12: true, // use 12-hour clock (true) or 24-hour clock (false)
+  };
+
+  const formattedDateTime: string = new Date(dateString).toLocaleString(
+    "en-US",
+    dateTimeOptions
+  );
+
+  const formattedDateDay: string = new Date(dateString).toLocaleString(
+    "en-US",
+    dateDayOptions
+  );
+
+  const formattedDate: string = new Date(dateString).toLocaleString(
+    "en-US",
+    dateOptions
+  );
+
+  const formattedTime: string = new Date(dateString).toLocaleString(
+    "en-US",
+    timeOptions
+  );
+
+  return {
+    dateTime: formattedDateTime,
+    dateDay: formattedDateDay,
+    dateOnly: formattedDate,
+    timeOnly: formattedTime,
+  };
+};
+
+export function encryptKey(passkey: string) {
+  return btoa(passkey);
+}
+
+export function decryptKey(passkey: string) {
+  return atob(passkey);
+}
