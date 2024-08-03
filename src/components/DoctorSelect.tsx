@@ -1,6 +1,7 @@
 import React, { FC } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Doctors } from "@/lib/validate";
+import Image from "next/image";
 
 interface DoctorSelectProps {
   value: string;
@@ -15,7 +16,9 @@ const DoctorSelect: FC<DoctorSelectProps> = ({ value, onChange }) => {
       <SelectTrigger className="w-full py-6 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 rounded-lg border border-gray-300 dark:border-gray-600  focus:outline-none outline-none">
         {selectedDoctor ? (
           <div className="flex items-center space-x-3">
-            <img
+            <Image
+            width={1000}
+            height={1000}
               src={selectedDoctor.image}
               alt={selectedDoctor.name}
               className="w-9 h-9 rounded-full"
@@ -33,7 +36,9 @@ const DoctorSelect: FC<DoctorSelectProps> = ({ value, onChange }) => {
         {Doctors.map((doctor) => (
           <SelectItem key={doctor.name} value={doctor.name} className="py-3">
             <div className="flex items-center space-x-3">
-              <img
+              <Image
+              width={1000}
+              height={1000}
                 src={doctor.image}
                 alt={doctor.name}
                 className="w-8 h-8 rounded-full"
