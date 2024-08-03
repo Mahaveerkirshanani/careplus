@@ -1,13 +1,24 @@
+/** @type {import('next').NextConfig} */
+
+
+
+
+
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+    
+  images: {
+    domains: ['i.pinimg.com'],
+  },
+    
+  webpack5: true,
   webpack: (config, { dev, isServer }) => {
     if (!dev && !isServer) {
-      // Suppress all warnings in production builds
       config.optimization.minimizer = config.optimization.minimizer.map((plugin) => {
         if (plugin.constructor.name === 'TerserPlugin') {
           plugin.options.terserOptions.compress.warnings = false;
@@ -19,16 +30,13 @@ const nextConfig = {
         return plugin;
       });
     }
-
-    // Suppress ESLint plugin warnings
     if (config.plugins) {
       config.plugins = config.plugins.filter(
         (plugin) => plugin.constructor.name !== 'ESLintWebpackPlugin'
       );
     }
-
     return config;
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
