@@ -38,7 +38,7 @@ import {
 import DatePicker from "react-datepicker";
 import { CalendarDays } from "lucide-react";
 import { Textarea } from "./ui/textarea";
-import { Appointment } from "../../interface";
+import { Appointment, Appoooo } from "../../interface";
 import { DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
 
 interface InewAppiontmentProp {
@@ -89,10 +89,10 @@ const NewAppointment = ({
 
   const router = useRouter();
 
-  const onSubmit = async (values: z.infer<typeof AppoitmentFormValidation>) => {
+  const onSubmit = async (values: z.infer<typeof AppointmentFormValidation>) => {
     setIsLoading(true);
-
-    let status;
+  
+    let status: Status;
     switch (type) {
       case "schedule":
         status = "scheduled";
@@ -100,60 +100,54 @@ const NewAppointment = ({
       case "cancel":
         status = "cancelled";
         break;
-
       default:
         status = "pending";
-        break;
     }
-
+  
     try {
       if (type === "create" && patientId) {
-        const appointmentData = {
+        const newAppointment: Appoooo = {
           userId,
           patient: patientId,
           primaryPhysician: values.primaryPhysician,
           schedule: new Date(values.schedule),
           reason: values.reason!,
-          status: status as Status,
+          status,
           note: values.note,
         };
-
-        const appointment = await createAppointment(appointmentData);
-
-        if (appointment) {
-          form.reset(),
-            router.push(
-              `/patients/${userId}/new-appointment/success?appointmentId=${appointment.$id}`
-            );
+  
+        const createdAppointment = await createAppointment(newAppointment);
+  
+        if (createdAppointment) {
+          form.reset();
+          router.push(`/patients/${userId}/new-appointment/success?appointmentId=${createdAppointment.$id}`);
         }
-      } else {
-        const appointmentToUpdate = {
-          userId,
-          appointmentId: appointment?.$id!,
-          appointment: {
-            primaryPhysician: values.primaryPhysician,
-            schedule: new Date(values.schedule),
-            status: status as Status,
-            cancellationReason: values.cancellationReason,
-          },
-          type,
+      } else if (appointment) {
+        const updatedAppointmentData: Partial<Appoooo> = {
+          primaryPhysician: values.primaryPhysician,
+          schedule: new Date(values.schedule),
+          status,
+          cancellationReason: values.cancellationReason,
         };
-
-        const updatedAppointment = await updateAppointment(appointmentToUpdate);
-
+  
+        const updatedAppointment = await updateAppointment({
+          userId,
+          appointmentId: appointment.$id!,
+          appointment: updatedAppointmentData,
+          type,
+        });
+  
         if (updatedAppointment) {
           setOpen && setOpen(false);
           form.reset();
         }
       }
-
     } catch (error) {
-      console.error("Failed to register user:", error);
-    } finally {
-      setIsLoading(false);
+      console.log(error);
     }
+    setIsLoading(false);
   };
-
+  
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-[#000000e5] text-white overflow-hidden">
       {/* Form Container */}

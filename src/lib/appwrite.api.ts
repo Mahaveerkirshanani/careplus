@@ -1,8 +1,14 @@
 import { ID, Query } from "node-appwrite";
-import { databases, storage, users } from "./appwrite.config";
+import {
+  accounts,
+  databases,
+  messaging,
+  storage,
+  users,
+} from "./appwrite.config";
 import { InputFile } from "node-appwrite/file";
 import { parseStringify, RegisterUserParams, Status } from "./validate";
-import { Appointment, UpdateAppointmentParams } from "../../interface";
+import { Appointment, Appoooo,  } from "../../interface";
 import { revalidatePath } from "next/cache";
 
 interface CreateUserParams {
@@ -26,6 +32,22 @@ interface GetUserParams {
   userId: string; // The unique ID of the user to retrieve
 }
 
+//  SEND SMS NOTIFICATION
+export const sendSMSNotification = async (userId: string, content: string) => {
+  try {
+    // https://appwrite.io/docs/references/1.5.x/server-nodejs/messaging#createSms
+    const message = await messaging.createSms(
+      ID.unique(),
+      content,
+      [],
+      [userId]
+    );
+    return parseStringify(message);
+  } catch (error) {
+    console.error("An error occurred while sending sms:", error);
+  }
+};
+
 export const createUser = async ({
   email,
   password,
@@ -40,6 +62,12 @@ export const createUser = async ({
       password,
       username
     );
+
+    let userId = response.$id;
+    const smsMessage = `Greetings from CarePulse , Regard  Mahaveer Rathore .`;
+    const reply = await sendSMSNotification(userId, smsMessage);
+
+    console.log(reply);
     return response;
   } catch (error: any) {
     if (error?.code === 409) {
@@ -136,7 +164,7 @@ const getRecentAppointmentList = async () => {
     const appointments = await databases.listDocuments(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!, // Your database ID
       process.env.NEXT_PUBLIC_APPWRITE_APPIONTMENT_COLLECTION_ID!, // Your collection ID
-      [Query.orderDesc("$createdAt")]
+      [Query.orderDesc("$id")]
     );
 
     const initialCounts = {
@@ -213,7 +241,49 @@ export const getAppointment = async (appointmentId: string) => {
   }
 };
 
-//  UPDATE APPOINTMENT//
+// //  UPDATE APPOINTMENT//
+// export const updateAppointment = async ({
+//   appointmentId,
+//   userId,
+//   appointment,
+//   type,
+// }: UpdateAppointmentParams) => {
+//   try {
+//     // Update appointment to scheduled -> https://appwrite.io/docs/references/cloud/server-nodejs/databases#updateDocument
+//     const updatedAppointment = await databases.updateDocument(
+//       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+//       process.env.NEXT_PUBLIC_APPWRITE_APPIONTMENT_COLLECTION_ID!,
+//       appointmentId,
+//       appointment
+//     );
+
+//     if (!updatedAppointment) throw Error;
+
+//     // const smsMessage = `Greetings from CarePulse. ${
+//     //   type === "schedule"
+//     //     ? `Your appointment is confirmed for ${
+//     //         formatDateTime(appointment.schedule!).dateTime
+//     //       } with Dr. ${appointment.primaryPhysician}`
+//     //     : `We regret to inform that your appointment for ${
+//     //         formatDateTime(appointment.schedule!).dateTime
+//     //       } is cancelled. Reason:  ${appointment.cancellationReason}`
+//     // }.`;
+//     // await sendSMSNotification(userId, smsMessage);
+
+//     revalidatePath("/admin");
+//     return parseStringify(updatedAppointment);
+//   } catch (error) {
+//     console.error("An error occurred while scheduling an appointment:", error);
+//   }
+// };// Adjust the import path based on your project structure
+
+export interface UpdateAppointmentParams {
+  appointmentId: string;
+  userId: string;
+  appointment: Partial<Appoooo>;
+  type: "create" | "cancel" | "schedule";
+}
+
 export const updateAppointment = async ({
   appointmentId,
   userId,
@@ -221,30 +291,28 @@ export const updateAppointment = async ({
   type,
 }: UpdateAppointmentParams) => {
   try {
-    // Update appointment to scheduled -> https://appwrite.io/docs/references/cloud/server-nodejs/databases#updateDocument
     const updatedAppointment = await databases.updateDocument(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-      process.env.NEXT_PUBLIC_APPWRITE_APPIONTMENT_COLLECTION_ID!,
+      process.env.NEXT_PUBLIC_APPWRITE_APPOINTMENT_COLLECTION_ID!,
       appointmentId,
       appointment
     );
 
-    if (!updatedAppointment) throw Error;
-
-    // const smsMessage = `Greetings from CarePulse. ${
-    //   type === "schedule"
-    //     ? `Your appointment is confirmed for ${
-    //         formatDateTime(appointment.schedule!).dateTime
-    //       } with Dr. ${appointment.primaryPhysician}`
-    //     : `We regret to inform that your appointment for ${
-    //         formatDateTime(appointment.schedule!).dateTime
-    //       } is cancelled. Reason:  ${appointment.cancellationReason}`
-    // }.`;
-    // await sendSMSNotification(userId, smsMessage);
+    if (!updatedAppointment) throw new Error("Failed to update appointment");
 
     revalidatePath("/admin");
     return parseStringify(updatedAppointment);
   } catch (error) {
-    console.error("An error occurred while scheduling an appointment:", error);
+    console.error("An error occurred while updating the appointment:", error);
+  }
+};
+
+export const loginUser = async ({ email, password } :{email:string, password:string}) => {
+  try {
+    const user = await accounts.createEmailPasswordSession(email,password)
+    return user;
+  } catch (error) {
+    console.error("Failed to login:", error);
+    throw error;
   }
 };

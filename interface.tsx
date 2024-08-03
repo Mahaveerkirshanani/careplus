@@ -47,6 +47,19 @@ export interface Appointment extends Models.Document {
   cancellationReason: string | null;
 }
 
+export interface Appoooo {
+  $id?: string;
+  userId: string;
+  patient: string;
+  primaryPhysician: string;
+  schedule: Date;
+  reason: string;
+  status: Status;
+  note?: string;
+  cancellationReason?: string;
+  [key: string]: any; // Add this if there are additional dynamic properties
+}
+ 
 
 export type UpdateAppointmentParams = {
   appointmentId: string;
