@@ -2,6 +2,8 @@ import { ID, Query } from "node-appwrite";
 import { databases, storage, users } from "./appwrite.config";
 import { InputFile } from "node-appwrite/file";
 import { parseStringify, RegisterUserParams, Status } from "./validate";
+import { Appointment, UpdateAppointmentParams } from "../../interface";
+import { revalidatePath } from "next/cache";
 
 interface CreateUserParams {
   email: string;
@@ -10,7 +12,7 @@ interface CreateUserParams {
   phone: string;
 }
 
-interface  CreateAppointmentParams  {
+interface CreateAppointmentParams {
   userId: string;
   patient: string;
   primaryPhysician: string;
@@ -18,7 +20,7 @@ interface  CreateAppointmentParams  {
   schedule: Date;
   status: Status;
   note: string | undefined;
-};
+}
 
 interface GetUserParams {
   userId: string; // The unique ID of the user to retrieve
@@ -52,7 +54,7 @@ export const createUser = async ({
 export const getUser = async ({ userId }: GetUserParams) => {
   try {
     // Fetch the user by their unique ID
-    const user =  await users.get(userId);
+    const user = await users.get(userId);
     return user;
   } catch (error: any) {
     // Handle errors, e.g., user not found or other issues
@@ -98,15 +100,6 @@ export const registerPatient = async ({
       );
     }
 
-    console.log({
-      identificationDocumentId: file?.$id || null,
-      identificationDocumentUrl: `${process.env
-        .NEXT_PUBLIC_APPWRITE_ENDPOINT!}/storage/buckets/${process.env
-        .NEXT_PUBLIC_APPWRITE_BUCKET_ID!}/files/${
-        file?.$id
-      }/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!}`,
-      ...patient,
-    });
     const newPatient = await databases.createDocument(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
       process.env.NEXT_PUBLIC_APPWRITE_PATIENT_COLLECTION_ID!,
@@ -123,23 +116,73 @@ export const registerPatient = async ({
     );
 
     return parseStringify(newPatient);
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("An error occurred while creating a new patient:", error);
   }
 };
 
+//===============================       APPIONTMENTS         ==============================//
 
+// interface Appointment {
+//   id: string;
+//   doctorName: string;
+//   patientName: string;
+//   appointmentTime: string;
+//   status: string;
+// }
 
+const getRecentAppointmentList = async () => {
+  try {
+    const appointments = await databases.listDocuments(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!, // Your database ID
+      process.env.NEXT_PUBLIC_APPWRITE_APPIONTMENT_COLLECTION_ID!, // Your collection ID
+      [Query.orderDesc("$createdAt")]
+    );
 
+    const initialCounts = {
+      scheduledCount: 0,
+      pendingCount: 0,
+      cancelledCount: 0,
+    };
 
+    const counts = (appointments.documents as Appointment[]).reduce(
+      (acc, appointment) => {
+        switch (appointment.status) {
+          case "scheduled":
+            acc.scheduledCount++;
+            break;
+          case "pending":
+            acc.pendingCount++;
+            break;
+          case "cancelled":
+            acc.cancelledCount++;
+            break;
+        }
+        return acc;
+      },
+      initialCounts
+    );
 
+    const data = {
+      totalCount: appointments.total,
+      ...counts,
+      documents: appointments.documents,
+    };
 
-
-
+    return parseStringify(data);
+  } catch (error) {
+    console.error(
+      "An error occurred while retrieving the recent appointments:",
+      error
+    );
+  }
+};
+export default getRecentAppointmentList;
 
 //============================  APPOINTMENT ACTIONS       =================================//
 export const createAppointment = async (
-  appointment: CreateAppointmentParams ) =>{
+  appointment: CreateAppointmentParams
+) => {
   try {
     const newAppointment = await databases.createDocument(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
@@ -148,26 +191,60 @@ export const createAppointment = async (
       appointment
     );
 
-    return parseStringify(newAppointment)
-  } catch (error:any) {
+    return parseStringify(newAppointment);
+  } catch (error: any) {
     console.error("Failed to create appointment :", error);
     throw error;
   }
+};
 
-}
-
-
-export const getAppointment = async ( appointmentId: string )=>{
+export const getAppointment = async (appointmentId: string) => {
   try {
     const appoitment = await databases.getDocument(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
       process.env.NEXT_PUBLIC_APPWRITE_APPIONTMENT_COLLECTION_ID!,
-      appointmentId 
-    )
-    
-    return parseStringify(appoitment)
-  } catch (error:any) {
+      appointmentId
+    );
+
+    return parseStringify(appoitment);
+  } catch (error: any) {
     console.error("Failed to get appointment :", error);
     throw error;
   }
-}
+};
+
+//  UPDATE APPOINTMENT//
+export const updateAppointment = async ({
+  appointmentId,
+  userId,
+  appointment,
+  type,
+}: UpdateAppointmentParams) => {
+  try {
+    // Update appointment to scheduled -> https://appwrite.io/docs/references/cloud/server-nodejs/databases#updateDocument
+    const updatedAppointment = await databases.updateDocument(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+      process.env.NEXT_PUBLIC_APPWRITE_APPIONTMENT_COLLECTION_ID!,
+      appointmentId,
+      appointment
+    );
+
+    if (!updatedAppointment) throw Error;
+
+    // const smsMessage = `Greetings from CarePulse. ${
+    //   type === "schedule"
+    //     ? `Your appointment is confirmed for ${
+    //         formatDateTime(appointment.schedule!).dateTime
+    //       } with Dr. ${appointment.primaryPhysician}`
+    //     : `We regret to inform that your appointment for ${
+    //         formatDateTime(appointment.schedule!).dateTime
+    //       } is cancelled. Reason:  ${appointment.cancellationReason}`
+    // }.`;
+    // await sendSMSNotification(userId, smsMessage);
+
+    revalidatePath("/admin");
+    return parseStringify(updatedAppointment);
+  } catch (error) {
+    console.error("An error occurred while scheduling an appointment:", error);
+  }
+};

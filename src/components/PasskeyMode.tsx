@@ -53,9 +53,6 @@ const validatePasskey = (
 ) => {
   e.preventDefault();
 
-  console.log(e)
-  console.log(passkey)
-  console.log( process.env.NEXT_PUBLIC_ADMIN_PASSKEY)
 
   if (passkey === process.env.NEXT_PUBLIC_ADMIN_PASSKEY) {
     const encryptedKey = encryptKey(passkey);

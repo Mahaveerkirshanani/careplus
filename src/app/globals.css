@@ -67,3 +67,16 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Add these styles in your global CSS file */
+.bg-light-blue {
+  background: linear-gradient(to right, rgba(173, 216, 230, 0.2), rgba(30, 144, 255, 0.2));
+}
+
+.bg-light-green {
+  background: linear-gradient(to right, rgba(144, 238, 144, 0.2), rgba(34, 139, 34, 0.2));
+}
+
+.bg-light-red {
+  background: linear-gradient(to right, rgba(255, 182, 193, 0.2), rgba(255, 69, 0, 0.2));
+}

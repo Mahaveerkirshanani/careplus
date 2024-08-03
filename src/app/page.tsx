@@ -44,11 +44,9 @@ const Register = ({ searchParams }: SearchParamProps) => {
 
   const onSubmit = async (values: RegisterSchemaType) => {
     setIsLoading(true);
-    console.log(values);
     try {
       const user = await createUser(values);
       if (user) router.push(`/patients/${user.$id}/home`);
-      console.log(values);
     } catch (error) {
       console.error("Failed to register user:", error);
     } finally {

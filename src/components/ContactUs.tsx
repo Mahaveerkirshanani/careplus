@@ -42,7 +42,6 @@ const ContactUs = () => {
   const router = useRouter();
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
     // Handle form submission logic here
     router.push('/thank-you'); // Redirect to a thank you page after submission
   }

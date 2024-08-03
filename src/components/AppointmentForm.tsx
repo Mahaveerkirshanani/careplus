@@ -19,10 +19,14 @@ import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { FaUser, FaEnvelope, FaLock, FaPhone } from "react-icons/fa";
 import Link from "next/link";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { Doctors, getAppointmentSchema, Status } from "@/lib/validate";
 import { useRouter } from "next/navigation";
-import { createAppointment, createUser } from "@/lib/appwrite.api";
+import {
+  createAppointment,
+  createUser,
+  updateAppointment,
+} from "@/lib/appwrite.api";
 import Image from "next/image";
 import {
   Select,
@@ -34,14 +38,24 @@ import {
 import DatePicker from "react-datepicker";
 import { CalendarDays } from "lucide-react";
 import { Textarea } from "./ui/textarea";
+import { Appointment } from "../../interface";
+import { DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
 
 interface InewAppiontmentProp {
   userId: string;
   patientId: string;
   type: "create" | "cancel" | "schedule";
+  appointment?: Appointment;
+  setOpen?: (open: boolean) => void;
 }
 
-const NewAppointment = ({ userId, patientId, type }: InewAppiontmentProp) => {
+const NewAppointment = ({
+  userId,
+  patientId,
+  type,
+  appointment,
+  setOpen,
+}: InewAppiontmentProp) => {
   const [isLoading, setIsLoading] = useState(false);
 
   let btnLabel;
@@ -78,7 +92,6 @@ const NewAppointment = ({ userId, patientId, type }: InewAppiontmentProp) => {
   const onSubmit = async (values: z.infer<typeof AppoitmentFormValidation>) => {
     setIsLoading(true);
 
-
     let status;
     switch (type) {
       case "schedule":
@@ -113,9 +126,27 @@ const NewAppointment = ({ userId, patientId, type }: InewAppiontmentProp) => {
               `/patients/${userId}/new-appointment/success?appointmentId=${appointment.$id}`
             );
         }
+      } else {
+        const appointmentToUpdate = {
+          userId,
+          appointmentId: appointment?.$id!,
+          appointment: {
+            primaryPhysician: values.primaryPhysician,
+            schedule: new Date(values.schedule),
+            status: status as Status,
+            cancellationReason: values.cancellationReason,
+          },
+          type,
+        };
+
+        const updatedAppointment = await updateAppointment(appointmentToUpdate);
+
+        if (updatedAppointment) {
+          setOpen && setOpen(false);
+          form.reset();
+        }
       }
 
-      console.log(values);
     } catch (error) {
       console.error("Failed to register user:", error);
     } finally {
@@ -128,20 +159,36 @@ const NewAppointment = ({ userId, patientId, type }: InewAppiontmentProp) => {
       {/* Form Container */}
       <div className="relative flex flex-col w-full items-center justify-center  overflow-y-auto">
         <div className="w-full  px-2 md:px-4">
-          <Image
-            src="/icons/logoipsum-297 (1).svg"
-            alt="Logo"
-            className=" w-[150px] mb-4"
-            width={1000}
-            height={1000}
-          />
+          {type == "create" && (
+            <section>
+              <Image
+                src="/icons/logoipsum-297 (1).svg"
+                alt="Logo"
+                className=" w-[150px] mb-4"
+                width={1000}
+                height={1000}
+              />
 
-          <h2 className="md:text-3xl text-2xl font-semibold text-center md:tracking-widest mb-2">
-            New Appoitment
-          </h2>
-          <p className="text-center text-xs text-gray-400 tracking-wider ">
-            Welcome, Request an appointment in 10 seconds
-          </p>
+              <h2 className="md:text-3xl text-2xl font-semibold text-center md:tracking-widest mb-2">
+                New Appoitment
+              </h2>
+              <p className="text-center text-xs text-gray-400 tracking-wider ">
+                Welcome, Request an appointment in 10 seconds
+              </p>
+            </section>
+          )}
+          {
+            type !=="create" &&(
+              <DialogHeader className="">
+              <DialogTitle className="capitalize">{type} Appointment</DialogTitle>
+              <DialogDescription>
+                Please fill in the following details to {type} appointment
+              </DialogDescription>
+            </DialogHeader>
+    
+            )
+          }
+
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
@@ -300,7 +347,7 @@ const NewAppointment = ({ userId, patientId, type }: InewAppiontmentProp) => {
             </form>
           </Form>
 
-          <p className="text-center mt-6 text-gray-500 lg:text-sm text-xs tracking-wider">
+          <p className="text-center text-gray-500 lg:text-sm text-xs tracking-wider">
             &copy; {new Date().getFullYear()} Mahaveer Kumar. All rights
             reserved.
           </p>

@@ -100,7 +100,6 @@ const PatientRegistrationForm = ({ user }: { user: User }) => {
       formData.append("fileName", values.identificationDocument[0].name);
     }
 
-    console.log(values);
 
     try {
       const patientData = {
@@ -114,7 +113,6 @@ const PatientRegistrationForm = ({ user }: { user: User }) => {
       if (newPatient) {
         router.push(`/patients/${user.$id}/new-appointment`);
       }
-      console.log(newPatient);
     } catch (error) {
       console.error("Failed to register user:", error);
     } finally {
