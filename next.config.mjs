@@ -17,24 +17,9 @@ const nextConfig = {
   },
     
   webpack5: true,
-  webpack: (config, { dev, isServer }) => {
-    if (!dev && !isServer) {
-      config.optimization.minimizer = config.optimization.minimizer.map((plugin) => {
-        if (plugin.constructor.name === 'TerserPlugin') {
-          plugin.options.terserOptions.compress.warnings = false;
-          plugin.options.terserOptions.output = {
-            ...plugin.options.terserOptions.output,
-            comments: false,
-          };
-        }
-        return plugin;
-      });
-    }
-    if (config.plugins) {
-      config.plugins = config.plugins.filter(
-        (plugin) => plugin.constructor.name !== 'ESLintWebpackPlugin'
-      );
-    }
+  webpack: (config) => {
+    config.resolve.fallback = { fs: false };
+
     return config;
   },
 };
